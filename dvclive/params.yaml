@@ -2,8 +2,8 @@ model_type: pickle
 params:
   data_ingestion:
     data_path: experiments/email.csv
-    test_size: 0.3
-    random_state: 2
+    test_size: 0.2
+    random_state: 42
   data_preprocessing:
     text_column: text
     target_column: target
