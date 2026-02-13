@@ -1,0 +1,17 @@
+model_type: pickle
+params:
+  data_ingestion:
+    data_path: experiments/email.csv
+    test_size: 0.3
+    random_state: 2
+  data_preprocessing:
+    text_column: text
+    target_column: target
+    train_data_path: data/processed/train_tfidf.csv
+    test_data_path: data/processed/test_tfidf.csv
+  feature_engineering:
+    text_column: text
+    target_column: target
+  model_training:
+    text_column: text
+    target_column: target

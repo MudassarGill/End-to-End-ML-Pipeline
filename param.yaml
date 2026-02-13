@@ -1,0 +1,17 @@
+data_ingestion:
+    data_path: 'experiments/email.csv'
+    test_size: 0.2
+    random_state: 42
+
+data_preprocessing:
+    text_column: 'text'
+    target_column: 'target'
+
+feature_engineering:
+    text_column: 'text'
+    target_column: 'target'
+
+model_training:
+    text_column: 'text'
+    target_column: 'target'
+    

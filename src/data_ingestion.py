@@ -4,6 +4,8 @@ import numpy as np
 import os
 from sklearn.model_selection import train_test_split
 import logging
+import yaml
+
 
 log_dir='logs'
 os.makedirs(log_dir,exist_ok=True)
@@ -25,6 +27,25 @@ logger.addHandler(file_handler)
 
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
+
+
+def load_params(params_path:str)->dict:
+    """
+     Load params from the params.yaml file
+    """
+    try:
+        with open(params_path, 'r') as f:
+            params = yaml.safe_load(f)
+        return params
+    except FileNotFoundError:
+        logger.error("File not found at %s",params_path)
+        raise FileNotFoundError("File not found at %s",params_path)
+    except yaml.YAMLError as e:
+        logger.error("Error parsing params.yaml file")
+        raise ValueError("Error parsing params.yaml file")
+    except Exception as e:
+        logger.error("Error loading params.yaml file")
+        raise ValueError("Error loading params.yaml file")
 
 
 
@@ -76,9 +97,10 @@ def save_data(train_data:pd.DataFrame,test_data:pd.DataFrame,data_path:str)->Non
 def main():
     try:
         
-        test_size=0.2
-        random_state=42
-        data_path = r'C:\Users\LAPTOPS HUB\Desktop\MLOps\End-to-End-ML-Pipeline\experiments\email.csv'
+        params=load_params('params.yaml')
+        test_size=params['data_ingestion']['test_size']
+        data_path=params['data_ingestion']['data_path']
+        random_state=params['data_ingestion']['random_state']
         df=load_data(data_path)
         final_df=preprocess_data(df)
         train_data,test_data=train_test_split(final_df,test_size=test_size,random_state=random_state)

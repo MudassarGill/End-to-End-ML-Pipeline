@@ -2,8 +2,10 @@ import pandas as pd
 import numpy as np
 import os
 import logging
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix,precision_recall_curve,f1_score
 import pickle
+import yaml
+from dvclive import Live
 
 log_dir='logs'
 os.makedirs(log_dir,exist_ok=True)
@@ -25,6 +27,25 @@ logger.addHandler(file_handler)
 
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
+
+def load_params(params_path:str)->dict:
+    """
+    This function is used to load the params from the given path
+    """
+    try:
+        with open(params_path, 'r') as f:
+            params = yaml.safe_load(f)
+        logger.debug("Params loaded successfully from %s",params_path)
+        return params
+    except FileNotFoundError:
+        logger.error("File not found at %s",params_path)
+        raise FileNotFoundError("File not found at %s",params_path)
+    except yaml.YAMLError as e:
+        logger.error("Error parsing params.yaml file")
+        raise ValueError("Error parsing params.yaml file")
+    except Exception as e:
+        logger.error("Error loading params.yaml file")
+        raise ValueError("Error loading params.yaml file")
 
 
 
@@ -80,11 +101,27 @@ def save_metrics(metrics:dict,metrics_path:str)->None:
 
 def main():
     try:
-        test_data=load_data('./data/processed/test_tfidf.csv')
+        params=load_params(params_path='params.yaml')
+        test_data=load_data(params['data_preprocessing']['test_data_path'])
         X_test=test_data.iloc[:,:-1]
         y_test=test_data.iloc[:,-1]
         model=pickle.load(open('./models/model.pkl','rb'))
-        metrics=evaluate_model(model,X_test,y_test)
+        metrics = evaluate_model(model, X_test, y_test)
+        
+        with Live(save_dvc_exp=True) as live:
+            live.log_metric("accuracy", metrics["accuracy"])
+            # Logging report and CM might need specific formatting for dvclive or just log summary metrics
+            live.log_param("model_type", "pickle")
+            live.log_param("params", params)
+
+        save_metrics(metrics, './models/metrics.json')
+
+
+
+
+
+
+
         save_metrics(metrics,'./models/metrics.json')
         logger.debug("Model evaluation completed successfully")
     except Exception as e:
